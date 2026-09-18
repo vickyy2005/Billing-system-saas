@@ -76,13 +76,11 @@ export default function CreateInvoicePage() {
         setProductsCatalog(pList);
         setInvoiceNumber(nextNum);
 
-        // Pre-select Customer if passed in URL
         if (preselectCustomerId) {
           const cust = await DataStore.getCustomerById(preselectCustomerId);
           if (cust) handleSelectCustomer(cust);
         }
 
-        // Duplicate Invoice Logic
         if (duplicateId) {
           const orig = await DataStore.getInvoiceById(duplicateId);
           if (orig) {
@@ -105,7 +103,6 @@ export default function CreateInvoicePage() {
             }
           }
         } else if (!items.length) {
-          // Add 1 default empty item row
           addEmptyItemRow();
         }
       } catch (err) {
@@ -235,7 +232,6 @@ export default function CreateInvoicePage() {
       invoice_date: invoiceDate,
       customer_id: selectedCustomer.id,
 
-      // Snapshot customer details
       customer_name: selectedCustomer.company_name,
       customer_gstin: selectedCustomer.gstin,
       customer_pan: selectedCustomer.pan,
@@ -299,7 +295,6 @@ export default function CreateInvoicePage() {
     );
   }
 
-  // Construct temporary invoice object for Live Preview Mode
   const previewInvoiceData: Invoice = {
     id: 'preview-id',
     invoice_number: invoiceNumber,
@@ -341,71 +336,76 @@ export default function CreateInvoicePage() {
   };
 
   return (
-    <div className="flex-1 space-y-6 pb-16">
+    <div className="flex-1 space-y-4 sm:space-y-6 pb-16">
       <Header
-        title={duplicateId ? 'Duplicate Invoice' : 'Create New GST Invoice'}
-        subtitle="Generate B2B tax invoice with automated customer & product autocomplete"
+        title={duplicateId ? 'Duplicate Invoice' : 'Create GST Invoice'}
+        subtitle="Generate B2B tax invoice with automated customer & product lookup"
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <button
+              type="button"
               onClick={() => setIsPreviewMode(!isPreviewMode)}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 sm:px-3 sm:py-2"
             >
-              <Eye className="h-4 w-4 text-blue-600" />
-              <span>{isPreviewMode ? 'Back to Edit' : 'Live Preview'}</span>
+              <Eye className="h-3.5 w-3.5 text-blue-600 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">{isPreviewMode ? 'Back to Edit' : 'Live Preview'}</span>
+              <span className="sm:hidden">{isPreviewMode ? 'Edit' : 'Preview'}</span>
             </button>
             <button
+              type="button"
               onClick={() => handleSaveInvoice('draft')}
               disabled={saving}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 disabled:opacity-50"
+              className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 sm:px-3 sm:py-2 disabled:opacity-50"
             >
-              <Save className="h-4 w-4 text-slate-500" />
-              <span>Save Draft</span>
+              <Save className="h-3.5 w-3.5 text-slate-500 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Save Draft</span>
+              <span className="sm:hidden">Draft</span>
             </button>
             <button
+              type="button"
               onClick={() => handleSaveInvoice('issued')}
               disabled={saving}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 disabled:opacity-50 transition"
+              className="inline-flex items-center gap-1 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 sm:px-4 sm:py-2 disabled:opacity-50 transition"
             >
-              <CheckCircle className="h-4 w-4" />
-              <span>Issue Invoice</span>
+              <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              <span>Issue</span>
             </button>
           </div>
         }
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
         {error && (
-          <div className="flex items-center gap-2 rounded-xl bg-rose-50 p-4 text-sm text-rose-700 border border-rose-200">
-            <AlertCircle className="h-5 w-5 shrink-0" />
+          <div className="flex items-center gap-2 rounded-xl bg-rose-50 p-3 sm:p-4 text-xs sm:text-sm text-rose-700 border border-rose-200">
+            <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        {/* PREVIEW MODE TOGGLE CONTAINER */}
         {isPreviewMode && company ? (
           <div className="space-y-4">
-            <div className="rounded-xl bg-amber-50 p-4 text-xs text-amber-800 border border-amber-200 flex items-center justify-between">
-              <span>Viewing live invoice print preview. Click &quot;Back to Edit&quot; to adjust details.</span>
+            <div className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800 border border-amber-200 flex flex-wrap items-center justify-between gap-2">
+              <span>Viewing live invoice print preview.</span>
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 font-bold text-white shadow"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white shadow"
               >
-                <Printer className="h-4 w-4" /> Print / Save PDF
+                <Printer className="h-3.5 w-3.5" /> Print / Save PDF
               </button>
             </div>
-            <PrintableInvoice invoice={previewInvoiceData} company={company} />
+            <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white p-2 sm:p-6 shadow-sm">
+              <PrintableInvoice invoice={previewInvoiceData} company={company} />
+            </div>
           </div>
         ) : (
-          /* FORM EDIT MODE */
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* SECTION 1: INVOICE HEADER DETAILS */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-blue-600 border-b border-slate-100 pb-2">
                 1. Invoice Details & Logistics
               </h2>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
+              <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 md:grid-cols-4">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700">Invoice Number *</label>
                   <input
@@ -498,7 +498,7 @@ export default function CreateInvoicePage() {
             </div>
 
             {/* SECTION 2: CUSTOMER SELECTION & PLACE OF SUPPLY */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4">
               <h2 className="text-xs font-bold uppercase tracking-wider text-blue-600 border-b border-slate-100 pb-2">
                 2. Customer & Billed Information
               </h2>
@@ -511,7 +511,6 @@ export default function CreateInvoicePage() {
 
               {selectedCustomer && (
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 pt-2">
-                  {/* Place of Supply */}
                   <div>
                     <label className="block text-xs font-semibold text-slate-700">Place of Supply (State & Code)</label>
                     <div className="grid grid-cols-3 gap-2 mt-1">
@@ -543,7 +542,6 @@ export default function CreateInvoicePage() {
                     </p>
                   </div>
 
-                  {/* Consignee Shipping Address Option */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
                       <label className="text-xs font-semibold text-slate-700">Shipping Address (Consignee)</label>
@@ -554,7 +552,7 @@ export default function CreateInvoicePage() {
                           onChange={(e) => setUseCustomShipping(e.target.checked)}
                           className="h-3.5 w-3.5 rounded border-slate-300 text-blue-600"
                         />
-                        <span>Custom Shipping Address</span>
+                        <span>Custom Address</span>
                       </label>
                     </div>
 
@@ -568,7 +566,7 @@ export default function CreateInvoicePage() {
                       />
                     ) : (
                       <div className="rounded-lg bg-slate-50 p-2.5 text-xs text-slate-600 border border-slate-200">
-                        Same as Billing Address ({selectedCustomer.billing_city}, {selectedCustomer.billing_state})
+                        Same as Billing ({selectedCustomer.billing_city}, {selectedCustomer.billing_state})
                       </div>
                     )}
                   </div>
@@ -576,8 +574,8 @@ export default function CreateInvoicePage() {
               )}
             </div>
 
-            {/* SECTION 3: DYNAMIC INVOICE ITEMS TABLE */}
-            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            {/* SECTION 3: DYNAMIC INVOICE ITEMS */}
+            <div className="rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h2 className="text-xs font-bold uppercase tracking-wider text-blue-600">
                   3. Line Items & Product Table
@@ -585,14 +583,148 @@ export default function CreateInvoicePage() {
                 <button
                   type="button"
                   onClick={addEmptyItemRow}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700 border border-blue-200 hover:bg-blue-100 transition"
+                  className="inline-flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700 border border-blue-200 hover:bg-blue-100 transition"
                 >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Add Line Item</span>
                 </button>
               </div>
 
-              <div className="overflow-x-auto">
+              {/* MOBILE CARDS VIEW (Below sm breakpoint) */}
+              <div className="space-y-4 block sm:hidden">
+                {items.map((item, idx) => (
+                  <div key={idx} className="rounded-xl border border-slate-200 bg-slate-50/50 p-3 space-y-3 relative">
+                    <div className="flex items-center justify-between">
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-700">
+                        {idx + 1}
+                      </span>
+                      {items.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeItemRow(idx)}
+                          className="rounded p-1 text-slate-400 hover:bg-rose-100 hover:text-rose-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="relative">
+                      <label className="block text-[11px] font-semibold text-slate-600 mb-1">Product Name *</label>
+                      <input
+                        type="text"
+                        value={item.product_name}
+                        onChange={(e) => {
+                          updateItemRow(idx, { product_name: e.target.value });
+                          setProductSearchQuery(e.target.value);
+                          setShowProductDropdownIndex(idx);
+                        }}
+                        onFocus={() => {
+                          setProductSearchQuery(item.product_name);
+                          setShowProductDropdownIndex(idx);
+                        }}
+                        placeholder="Type product name or select..."
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold focus:border-blue-500 focus:outline-none"
+                      />
+
+                      {showProductDropdownIndex === idx && (
+                        <div className="absolute left-0 top-full z-40 mt-1 max-h-48 w-full overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
+                          <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                            Catalog Suggestions
+                          </div>
+                          {productsCatalog
+                            .filter((p) =>
+                              !productSearchQuery.trim() ||
+                              p.product_name.toLowerCase().includes(productSearchQuery.toLowerCase()) ||
+                              (p.hsn_code && p.hsn_code.includes(productSearchQuery))
+                            )
+                            .map((p) => (
+                              <div
+                                key={p.id}
+                                onClick={() => handleSelectCatalogProduct(idx, p)}
+                                className="cursor-pointer px-3 py-2 text-xs hover:bg-blue-50 transition border-b border-slate-100 last:border-none"
+                              >
+                                <div className="font-semibold text-slate-900">{p.product_name}</div>
+                                <div className="flex justify-between text-[10px] text-slate-500">
+                                  <span>HSN: {p.hsn_code || '—'}</span>
+                                  <span>₹{p.default_rate} ({p.gst_rate}%)</span>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">HSN/SAC</label>
+                        <input
+                          type="text"
+                          value={item.hsn_code || ''}
+                          onChange={(e) => updateItemRow(idx, { hsn_code: e.target.value })}
+                          className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-center font-mono"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">Unit</label>
+                        <input
+                          type="text"
+                          value={item.unit || 'PCS'}
+                          onChange={(e) => updateItemRow(idx, { unit: e.target.value })}
+                          className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs text-center uppercase"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">Qty *</label>
+                        <input
+                          type="number"
+                          step="0.001"
+                          min="0.001"
+                          value={item.quantity || ''}
+                          onChange={(e) => updateItemRow(idx, { quantity: parseFloat(e.target.value) || 0 })}
+                          className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-bold text-right"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">Rate (₹) *</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          value={item.rate || ''}
+                          onChange={(e) => updateItemRow(idx, { rate: parseFloat(e.target.value) || 0 })}
+                          className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-xs font-semibold text-right"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">GST %</label>
+                        <select
+                          value={item.gst_rate || 18}
+                          onChange={(e) => updateItemRow(idx, { gst_rate: parseFloat(e.target.value) || 0 })}
+                          className="w-full rounded-lg border border-slate-300 px-1 py-1.5 text-xs text-center"
+                        >
+                          <option value={0}>0%</option>
+                          <option value={5}>5%</option>
+                          <option value={12}>12%</option>
+                          <option value={18}>18%</option>
+                          <option value={28}>28%</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center text-xs pt-2 border-t border-slate-200">
+                      <span className="text-slate-500">Taxable: <strong>{formatCurrency(item.taxable_amount)}</strong></span>
+                      <span className="text-slate-900 font-bold">Total: {formatCurrency(item.total_amount)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* DESKTOP TABLE VIEW (sm:block and above) */}
+              <div className="overflow-x-auto hidden sm:block">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase text-[11px]">
                     <tr>
@@ -615,27 +747,23 @@ export default function CreateInvoicePage() {
                       <tr key={idx} className="hover:bg-slate-50/80">
                         <td className="py-2.5 px-2 text-center font-bold text-slate-500">{idx + 1}</td>
 
-                        {/* Product Name with Catalog Autocomplete */}
                         <td className="py-2.5 px-2 relative">
-                          <div className="flex items-center gap-1">
-                            <input
-                              type="text"
-                              value={item.product_name}
-                              onChange={(e) => {
-                                updateItemRow(idx, { product_name: e.target.value });
-                                setProductSearchQuery(e.target.value);
-                                setShowProductDropdownIndex(idx);
-                              }}
-                              onFocus={() => {
-                                setProductSearchQuery(item.product_name);
-                                setShowProductDropdownIndex(idx);
-                              }}
-                              placeholder="Type or select product..."
-                              className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            />
-                          </div>
+                          <input
+                            type="text"
+                            value={item.product_name}
+                            onChange={(e) => {
+                              updateItemRow(idx, { product_name: e.target.value });
+                              setProductSearchQuery(e.target.value);
+                              setShowProductDropdownIndex(idx);
+                            }}
+                            onFocus={() => {
+                              setProductSearchQuery(item.product_name);
+                              setShowProductDropdownIndex(idx);
+                            }}
+                            placeholder="Type or select product..."
+                            className="w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-xs font-semibold focus:border-blue-500 focus:outline-none"
+                          />
 
-                          {/* Product Autocomplete Dropdown */}
                           {showProductDropdownIndex === idx && (
                             <div className="absolute left-0 top-full z-40 mt-1 max-h-48 w-72 overflow-y-auto rounded-lg border border-slate-200 bg-white py-1 shadow-xl">
                               <div className="px-3 py-1 text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
@@ -664,7 +792,6 @@ export default function CreateInvoicePage() {
                           )}
                         </td>
 
-                        {/* HSN Code */}
                         <td className="py-2.5 px-2">
                           <input
                             type="text"
@@ -674,7 +801,6 @@ export default function CreateInvoicePage() {
                           />
                         </td>
 
-                        {/* Quantity */}
                         <td className="py-2.5 px-2">
                           <input
                             type="number"
@@ -686,7 +812,6 @@ export default function CreateInvoicePage() {
                           />
                         </td>
 
-                        {/* Unit */}
                         <td className="py-2.5 px-2">
                           <input
                             type="text"
@@ -696,7 +821,6 @@ export default function CreateInvoicePage() {
                           />
                         </td>
 
-                        {/* Rate */}
                         <td className="py-2.5 px-2">
                           <input
                             type="number"
@@ -708,7 +832,6 @@ export default function CreateInvoicePage() {
                           />
                         </td>
 
-                        {/* Discount % */}
                         <td className="py-2.5 px-2">
                           <input
                             type="number"
@@ -721,12 +844,10 @@ export default function CreateInvoicePage() {
                           />
                         </td>
 
-                        {/* Taxable Amount */}
                         <td className="py-2.5 px-2 text-right font-bold text-slate-800">
                           {formatNumber(item.taxable_amount)}
                         </td>
 
-                        {/* GST % */}
                         <td className="py-2.5 px-2">
                           <select
                             value={item.gst_rate || 18}
@@ -741,17 +862,14 @@ export default function CreateInvoicePage() {
                           </select>
                         </td>
 
-                        {/* GST Amount */}
                         <td className="py-2.5 px-2 text-right font-medium text-slate-700">
                           {formatNumber(item.gst_amount)}
                         </td>
 
-                        {/* Total Amount */}
                         <td className="py-2.5 px-2 text-right font-bold text-slate-900">
                           {formatNumber(item.total_amount)}
                         </td>
 
-                        {/* Remove Action */}
                         <td className="py-2.5 px-2 text-center">
                           {items.length > 1 && (
                             <button
@@ -771,9 +889,8 @@ export default function CreateInvoicePage() {
             </div>
 
             {/* SECTION 4: INVOICE TOTALS & SUMMARY */}
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-              {/* GST Tax Summary Box (Left 7 cols) */}
-              <div className="lg:col-span-7 rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-7 rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-3 sm:space-y-4">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700">
                   GST Rate Breakdown Summary
                 </h3>
@@ -822,8 +939,7 @@ export default function CreateInvoicePage() {
                 </div>
               </div>
 
-              {/* Invoice Totals Box (Right 5 cols) */}
-              <div className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-6 shadow-sm space-y-3 font-medium text-xs">
+              <div className="lg:col-span-5 rounded-xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-3 font-medium text-xs">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 border-b border-slate-100 pb-2">
                   Invoice Financial Summary
                 </h3>
@@ -868,7 +984,7 @@ export default function CreateInvoicePage() {
                   <span className="font-mono">{totals.round_off >= 0 ? `+${totals.round_off.toFixed(2)}` : totals.round_off.toFixed(2)}</span>
                 </div>
 
-                <div className="flex justify-between rounded-xl bg-blue-600 p-4 text-white text-base font-extrabold shadow-md shadow-blue-600/20">
+                <div className="flex justify-between rounded-xl bg-blue-600 p-3.5 text-white text-sm sm:text-base font-extrabold shadow-md shadow-blue-600/20">
                   <span>GRAND TOTAL:</span>
                   <span>{formatCurrency(totals.grand_total)}</span>
                 </div>

@@ -3,13 +3,10 @@
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { useAuth } from '@/context/AuthContext';
+import { SidebarProvider, useSidebar } from '@/context/SidebarContext';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [mobileOpen, setMobileOpen] = useState(false);
+function DashboardLayoutContent({ children }: { children: React.ReactNode }) {
+  const { mobileOpen, setMobileOpen } = useSidebar();
   const { loading } = useAuth();
 
   if (loading) {
@@ -26,11 +23,19 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen bg-slate-50">
       <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <main className="flex-1 overflow-y-auto">
+      <div className="flex flex-1 flex-col overflow-x-hidden">
+        <main className="flex-1 overflow-y-auto min-w-0">
           {children}
         </main>
       </div>
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider>
+      <DashboardLayoutContent>{children}</DashboardLayoutContent>
+    </SidebarProvider>
   );
 }

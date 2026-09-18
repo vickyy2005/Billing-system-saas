@@ -21,12 +21,10 @@ export default function ReportsPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Filters
   const [reportType, setReportType] = useState<'sales' | 'customer' | 'monthly' | 'gst'>('sales');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
-  const [selectedGstRate, setSelectedGstRate] = useState<number | 'all'>('all');
 
   useEffect(() => {
     async function load() {
@@ -51,15 +49,12 @@ export default function ReportsPage() {
     load();
   }, [fromDate, toDate, selectedCustomerId]);
 
-  // Aggregate stats
   const totalTaxable = invoices.reduce((acc, inv) => acc + (inv.taxable_amount || 0), 0);
   const totalCGST = invoices.reduce((acc, inv) => acc + (inv.cgst_amount || 0), 0);
   const totalSGST = invoices.reduce((acc, inv) => acc + (inv.sgst_amount || 0), 0);
   const totalIGST = invoices.reduce((acc, inv) => acc + (inv.igst_amount || 0), 0);
-  const totalGST = totalCGST + totalSGST + totalIGST;
   const totalSales = invoices.reduce((acc, inv) => acc + (inv.grand_total || 0), 0);
 
-  // Group by customer for Customer-wise Sales
   const customerMap = new Map<string, { name: string; count: number; total: number; gst: number }>();
   for (const inv of invoices) {
     const key = inv.customer_name || 'Unknown';
@@ -71,7 +66,6 @@ export default function ReportsPage() {
   }
   const customerReportData = Array.from(customerMap.values()).sort((a, b) => b.total - a.total);
 
-  // Group by month for Monthly Sales
   const monthMap = new Map<string, { month: string; count: number; taxable: number; gst: number; total: number }>();
   for (const inv of invoices) {
     const date = new Date(inv.invoice_date);
@@ -86,7 +80,6 @@ export default function ReportsPage() {
   }
   const monthlyReportData = Array.from(monthMap.values()).sort((a, b) => b.month.localeCompare(a.month));
 
-  // CSV Export Utility
   const exportToCSV = () => {
     let headers: string[] = [];
     let rows: string[][] = [];
@@ -149,24 +142,25 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="flex-1 space-y-6 pb-12">
+    <div className="flex-1 space-y-4 sm:space-y-6 pb-12">
       <Header
         title="Business Reports & GST Analytics"
         subtitle="Generate sales reports, GST summaries, and export data for accounting"
         actions={
           <button
             onClick={exportToCSV}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-blue-700 transition"
           >
             <Download className="h-4 w-4" />
-            <span>Export CSV Report</span>
+            <span className="hidden sm:inline">Export CSV Report</span>
+            <span className="sm:hidden">CSV</span>
           </button>
         }
       />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-6">
-        {/* Report Type Selector Tabs */}
-        <div className="flex border-b border-slate-200 bg-white rounded-xl p-1 shadow-sm">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+        {/* Scrollable Mobile Tabs */}
+        <div className="flex overflow-x-auto scrollbar-none border-b border-slate-200 bg-white rounded-xl p-1 shadow-sm whitespace-nowrap">
           {[
             { id: 'sales', label: 'Sales Report', icon: TrendingUp },
             { id: 'customer', label: 'Customer-wise Sales', icon: Users },
@@ -179,11 +173,11 @@ export default function ReportsPage() {
               <button
                 key={tab.id}
                 onClick={() => setReportType(tab.id as any)}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-3 text-xs font-semibold rounded-lg transition ${
+                className={`flex-1 min-w-[130px] flex items-center justify-center gap-2 py-2 px-3 text-xs font-semibold rounded-lg transition ${
                   isActive ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-600 hover:bg-slate-100'
                 }`}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5" />
                 <span>{tab.label}</span>
               </button>
             );
@@ -191,7 +185,7 @@ export default function ReportsPage() {
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-sm">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
             <div>
               <label className="block text-[11px] font-semibold text-slate-500 mb-1">From Date</label>
@@ -245,25 +239,25 @@ export default function ReportsPage() {
         </div>
 
         {/* Aggregate Metrics Bar */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <span className="text-xs font-medium text-slate-500">Taxable Turnover</span>
-            <p className="mt-2 text-xl font-bold text-slate-900">{formatCurrency(totalTaxable)}</p>
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <div className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm">
+            <span className="text-[11px] sm:text-xs font-medium text-slate-500">Taxable Turnover</span>
+            <p className="mt-1 sm:mt-2 text-base sm:text-xl font-bold text-slate-900">{formatCurrency(totalTaxable)}</p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <span className="text-xs font-medium text-slate-500">CGST + SGST Collected</span>
-            <p className="mt-2 text-xl font-bold text-slate-900">{formatCurrency(totalCGST + totalSGST)}</p>
+          <div className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm">
+            <span className="text-[11px] sm:text-xs font-medium text-slate-500">CGST + SGST</span>
+            <p className="mt-1 sm:mt-2 text-base sm:text-xl font-bold text-slate-900">{formatCurrency(totalCGST + totalSGST)}</p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <span className="text-xs font-medium text-slate-500">IGST Collected</span>
-            <p className="mt-2 text-xl font-bold text-slate-900">{formatCurrency(totalIGST)}</p>
+          <div className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm">
+            <span className="text-[11px] sm:text-xs font-medium text-slate-500">IGST</span>
+            <p className="mt-1 sm:mt-2 text-base sm:text-xl font-bold text-slate-900">{formatCurrency(totalIGST)}</p>
           </div>
 
-          <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
-            <span className="text-xs font-medium text-slate-500">Total Sales (Inc. Taxes)</span>
-            <p className="mt-2 text-xl font-bold text-blue-700">{formatCurrency(totalSales)}</p>
+          <div className="rounded-xl border border-slate-200 bg-white p-3.5 sm:p-4 shadow-sm">
+            <span className="text-[11px] sm:text-xs font-medium text-slate-500">Total Sales</span>
+            <p className="mt-1 sm:mt-2 text-base sm:text-xl font-bold text-blue-700">{formatCurrency(totalSales)}</p>
           </div>
         </div>
 
@@ -274,27 +268,27 @@ export default function ReportsPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
                   <tr>
-                    <th className="px-6 py-3.5">Invoice No</th>
-                    <th className="px-6 py-3.5">Date</th>
-                    <th className="px-6 py-3.5">Customer</th>
-                    <th className="px-6 py-3.5 text-right">Taxable</th>
-                    <th className="px-6 py-3.5 text-right">CGST</th>
-                    <th className="px-6 py-3.5 text-right">SGST</th>
-                    <th className="px-6 py-3.5 text-right">IGST</th>
-                    <th className="px-6 py-3.5 text-right">Grand Total</th>
+                    <th className="px-4 sm:px-6 py-3.5">Invoice No</th>
+                    <th className="px-4 sm:px-6 py-3.5">Date</th>
+                    <th className="px-4 sm:px-6 py-3.5">Customer</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Taxable</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">CGST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">SGST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">IGST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Grand Total</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-700">
                   {invoices.map((i) => (
                     <tr key={i.id} className="hover:bg-slate-50">
-                      <td className="px-6 py-3.5 font-bold text-blue-600">{i.invoice_number}</td>
-                      <td className="px-6 py-3.5">{formatDate(i.invoice_date)}</td>
-                      <td className="px-6 py-3.5 font-semibold text-slate-900">{i.customer_name}</td>
-                      <td className="px-6 py-3.5 text-right font-medium">{formatCurrency(i.taxable_amount)}</td>
-                      <td className="px-6 py-3.5 text-right text-slate-600">{formatCurrency(i.cgst_amount)}</td>
-                      <td className="px-6 py-3.5 text-right text-slate-600">{formatCurrency(i.sgst_amount)}</td>
-                      <td className="px-6 py-3.5 text-right text-slate-600">{formatCurrency(i.igst_amount)}</td>
-                      <td className="px-6 py-3.5 text-right font-bold text-slate-900">{formatCurrency(i.grand_total)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 font-bold text-blue-600">{i.invoice_number}</td>
+                      <td className="px-4 sm:px-6 py-3.5">{formatDate(i.invoice_date)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 font-semibold text-slate-900">{i.customer_name}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-medium">{formatCurrency(i.taxable_amount)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right text-slate-600">{formatCurrency(i.cgst_amount)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right text-slate-600">{formatCurrency(i.sgst_amount)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right text-slate-600">{formatCurrency(i.igst_amount)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-bold text-slate-900">{formatCurrency(i.grand_total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -305,19 +299,19 @@ export default function ReportsPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
                   <tr>
-                    <th className="px-6 py-3.5">Customer Name</th>
-                    <th className="px-6 py-3.5 text-center">Invoices Count</th>
-                    <th className="px-6 py-3.5 text-right">Total GST Collected</th>
-                    <th className="px-6 py-3.5 text-right">Total Business Volume</th>
+                    <th className="px-4 sm:px-6 py-3.5">Customer Name</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-center">Invoices Count</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Total GST Collected</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Total Business Volume</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-700">
                   {customerReportData.map((c, idx) => (
                     <tr key={idx} className="hover:bg-slate-50">
-                      <td className="px-6 py-3.5 font-bold text-slate-900">{c.name}</td>
-                      <td className="px-6 py-3.5 text-center font-semibold">{c.count}</td>
-                      <td className="px-6 py-3.5 text-right font-medium text-purple-700">{formatCurrency(c.gst)}</td>
-                      <td className="px-6 py-3.5 text-right font-bold text-blue-700">{formatCurrency(c.total)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 font-bold text-slate-900">{c.name}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-center font-semibold">{c.count}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-medium text-purple-700">{formatCurrency(c.gst)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-bold text-blue-700">{formatCurrency(c.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -328,21 +322,21 @@ export default function ReportsPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
                   <tr>
-                    <th className="px-6 py-3.5">Month</th>
-                    <th className="px-6 py-3.5 text-center">Invoices Issued</th>
-                    <th className="px-6 py-3.5 text-right">Taxable Amount</th>
-                    <th className="px-6 py-3.5 text-right">Total GST</th>
-                    <th className="px-6 py-3.5 text-right">Grand Total Sales</th>
+                    <th className="px-4 sm:px-6 py-3.5">Month</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-center">Invoices Issued</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Taxable Amount</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Total GST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Grand Total Sales</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-700">
                   {monthlyReportData.map((m, idx) => (
                     <tr key={idx} className="hover:bg-slate-50">
-                      <td className="px-6 py-3.5 font-bold text-slate-900">{m.month}</td>
-                      <td className="px-6 py-3.5 text-center font-semibold">{m.count}</td>
-                      <td className="px-6 py-3.5 text-right font-medium">{formatCurrency(m.taxable)}</td>
-                      <td className="px-6 py-3.5 text-right font-medium text-purple-700">{formatCurrency(m.gst)}</td>
-                      <td className="px-6 py-3.5 text-right font-bold text-blue-700">{formatCurrency(m.total)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 font-bold text-slate-900">{m.month}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-center font-semibold">{m.count}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-medium">{formatCurrency(m.taxable)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-medium text-purple-700">{formatCurrency(m.gst)}</td>
+                      <td className="px-4 sm:px-6 py-3.5 text-right font-bold text-blue-700">{formatCurrency(m.total)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -353,14 +347,14 @@ export default function ReportsPage() {
               <table className="w-full text-left text-xs">
                 <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-semibold">
                   <tr>
-                    <th className="px-6 py-3.5">Invoice No</th>
-                    <th className="px-6 py-3.5">Customer GSTIN</th>
-                    <th className="px-6 py-3.5">Place of Supply</th>
-                    <th className="px-6 py-3.5 text-right">Taxable Value</th>
-                    <th className="px-6 py-3.5 text-right">CGST</th>
-                    <th className="px-6 py-3.5 text-right">SGST</th>
-                    <th className="px-6 py-3.5 text-right">IGST</th>
-                    <th className="px-6 py-3.5 text-right">Total GST</th>
+                    <th className="px-4 sm:px-6 py-3.5">Invoice No</th>
+                    <th className="px-4 sm:px-6 py-3.5">Customer GSTIN</th>
+                    <th className="px-4 sm:px-6 py-3.5">Place of Supply</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Taxable Value</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">CGST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">SGST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">IGST</th>
+                    <th className="px-4 sm:px-6 py-3.5 text-right">Total GST</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 text-slate-700">
@@ -368,14 +362,14 @@ export default function ReportsPage() {
                     const gstTotal = (i.cgst_amount || 0) + (i.sgst_amount || 0) + (i.igst_amount || 0);
                     return (
                       <tr key={i.id} className="hover:bg-slate-50">
-                        <td className="px-6 py-3.5 font-bold text-blue-600">{i.invoice_number}</td>
-                        <td className="px-6 py-3.5 font-mono font-semibold">{i.customer_gstin || 'UNREGISTERED'}</td>
-                        <td className="px-6 py-3.5">{i.place_of_supply || 'Maharashtra'}</td>
-                        <td className="px-6 py-3.5 text-right font-medium">{formatCurrency(i.taxable_amount)}</td>
-                        <td className="px-6 py-3.5 text-right">{formatCurrency(i.cgst_amount)}</td>
-                        <td className="px-6 py-3.5 text-right">{formatCurrency(i.sgst_amount)}</td>
-                        <td className="px-6 py-3.5 text-right">{formatCurrency(i.igst_amount)}</td>
-                        <td className="px-6 py-3.5 text-right font-bold text-purple-700">{formatCurrency(gstTotal)}</td>
+                        <td className="px-4 sm:px-6 py-3.5 font-bold text-blue-600">{i.invoice_number}</td>
+                        <td className="px-4 sm:px-6 py-3.5 font-mono font-semibold">{i.customer_gstin || 'UNREGISTERED'}</td>
+                        <td className="px-4 sm:px-6 py-3.5">{i.place_of_supply || 'Maharashtra'}</td>
+                        <td className="px-4 sm:px-6 py-3.5 text-right font-medium">{formatCurrency(i.taxable_amount)}</td>
+                        <td className="px-4 sm:px-6 py-3.5 text-right">{formatCurrency(i.cgst_amount)}</td>
+                        <td className="px-4 sm:px-6 py-3.5 text-right">{formatCurrency(i.sgst_amount)}</td>
+                        <td className="px-4 sm:px-6 py-3.5 text-right">{formatCurrency(i.igst_amount)}</td>
+                        <td className="px-4 sm:px-6 py-3.5 text-right font-bold text-purple-700">{formatCurrency(gstTotal)}</td>
                       </tr>
                     );
                   })}
